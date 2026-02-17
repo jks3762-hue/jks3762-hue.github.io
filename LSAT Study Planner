@@ -474,6 +474,14 @@
         <header>
             <h1>Adaptive LSAT Study Planner</h1>
             <p class="subtitle">AI-Powered Personalized Preparation</p>
+            <div style="max-width: 800px; margin: 30px auto 0; background: rgba(255,255,255,0.95); padding: 25px 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);">
+                <p style="font-size: 1.15rem; line-height: 1.8; color: var(--text); margin-bottom: 15px;">
+                    Welcome to your intelligent LSAT study companion! This adaptive planner creates a personalized study schedule based on your current score, target goals, and available time. 
+                </p>
+                <p style="font-size: 1.15rem; line-height: 1.8; color: var(--text); margin: 0;">
+                    Unlike static calendars, our AI continuously adjusts your plan based on weekly performance, identifies weak areas, prevents burnout, and projects your score trajectory—helping you study smarter, not just harder.
+                </p>
+            </div>
         </header>
 
         <!-- Initial Setup Form -->
@@ -521,19 +529,11 @@
                             <input type="range" id="rcAccuracy" min="0" max="100" value="65"
                                    oninput="updateBar('rc', this.value)" style="margin-top: 10px;">
                         </div>
-                        <div class="strength-bar">
-                            <label>Analytical Reasoning</label>
-                            <div class="bar-container">
-                                <div class="bar-fill" id="arBar" style="height: 60%;">60%</div>
-                            </div>
-                            <input type="range" id="arAccuracy" min="0" max="100" value="60"
-                                   oninput="updateBar('ar', this.value)" style="margin-top: 10px;">
-                        </div>
                     </div>
                 </div>
 
                 <h3>Average Time Per Question (seconds)</h3>
-                <div class="grid-3">
+                <div class="grid-2">
                     <div class="form-group">
                         <label for="lrTime">Logical Reasoning</label>
                         <input type="number" id="lrTime" value="90" required>
@@ -541,10 +541,6 @@
                     <div class="form-group">
                         <label for="rcTime">Reading Comp.</label>
                         <input type="number" id="rcTime" value="90" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="arTime">Analytical Reasoning</label>
-                        <input type="number" id="arTime" value="90" required>
                     </div>
                 </div>
 
@@ -628,7 +624,7 @@
                     </div>
 
                     <h3>Section Performance This Week</h3>
-                    <div class="grid-3">
+                    <div class="grid-2">
                         <div class="form-group">
                             <label for="lrAccuracyUpdate">LR Accuracy %</label>
                             <input type="number" id="lrAccuracyUpdate" min="0" max="100" required>
@@ -636,10 +632,6 @@
                         <div class="form-group">
                             <label for="rcAccuracyUpdate">RC Accuracy %</label>
                             <input type="number" id="rcAccuracyUpdate" min="0" max="100" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="arAccuracyUpdate">AR Accuracy %</label>
-                            <input type="number" id="arAccuracyUpdate" min="0" max="100" required>
                         </div>
                     </div>
 
@@ -696,8 +688,7 @@
                 weeklyHours: parseInt(document.getElementById('weeklyHours').value),
                 sections: {
                     lr: { accuracy: parseInt(document.getElementById('lrAccuracy').value), time: parseInt(document.getElementById('lrTime').value) },
-                    rc: { accuracy: parseInt(document.getElementById('rcAccuracy').value), time: parseInt(document.getElementById('rcTime').value) },
-                    ar: { accuracy: parseInt(document.getElementById('arAccuracy').value), time: parseInt(document.getElementById('arTime').value) }
+                    rc: { accuracy: parseInt(document.getElementById('rcAccuracy').value), time: parseInt(document.getElementById('rcTime').value) }
                 }
             };
 
@@ -734,13 +725,11 @@
             // Determine weakest sections
             const sectionArray = [
                 { name: 'LR', accuracy: sections.lr.accuracy },
-                { name: 'RC', accuracy: sections.rc.accuracy },
-                { name: 'AR', accuracy: sections.ar.accuracy }
+                { name: 'RC', accuracy: sections.rc.accuracy }
             ].sort((a, b) => a.accuracy - b.accuracy);
 
             const weakest = sectionArray[0].name;
-            const middle = sectionArray[1].name;
-            const strongest = sectionArray[2].name;
+            const strongest = sectionArray[1].name;
 
             // Calculate practice test frequency
             const ptFrequency = weeksRemaining > 8 ? 2 : 1; // PT every 2 weeks if >8 weeks, else weekly
@@ -760,10 +749,10 @@
                     tasks: `${weakest} Drills (${Math.round(hoursPerDay * 2)} hrs) - Focus on your weakest area with timed practice`
                 });
 
-                // Day 2: Middle section
+                // Day 2: Strongest section
                 weekSchedule.days.push({
                     day: 'Tuesday',
-                    tasks: `${middle} Drills (${Math.round(hoursPerDay * 1.5)} hrs) - Targeted practice with review`
+                    tasks: `${strongest} Drills (${Math.round(hoursPerDay * 1.5)} hrs) - Maintain proficiency with targeted practice`
                 });
 
                 // Day 3: Mixed review
@@ -772,10 +761,10 @@
                     tasks: `Mixed Section Review (${Math.round(hoursPerDay * 1.5)} hrs) - Review mistakes from Mon/Tue`
                 });
 
-                // Day 4: Strongest section maintenance
+                // Day 4: Weakest section again
                 weekSchedule.days.push({
                     day: 'Thursday',
-                    tasks: `${strongest} Practice (${Math.round(hoursPerDay)} hr) - Maintain proficiency`
+                    tasks: `${weakest} Advanced Practice (${Math.round(hoursPerDay * 2)} hrs) - Challenging problems in weak area`
                 });
 
                 // Day 5: Depends on PT week
@@ -956,23 +945,20 @@
             sectionChart = new Chart(sectionCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Logical Reasoning', 'Reading Comp.', 'Analytical Reasoning'],
+                    labels: ['Logical Reasoning', 'Reading Comprehension'],
                     datasets: [{
                         label: 'Accuracy %',
                         data: [
                             latestData.sections.lr.accuracy,
-                            latestData.sections.rc.accuracy,
-                            latestData.sections.ar.accuracy
+                            latestData.sections.rc.accuracy
                         ],
                         backgroundColor: [
                             'rgba(50, 130, 184, 0.8)',
-                            'rgba(102, 126, 234, 0.8)',
-                            'rgba(118, 75, 162, 0.8)'
+                            'rgba(102, 126, 234, 0.8)'
                         ],
                         borderColor: [
                             'rgba(50, 130, 184, 1)',
-                            'rgba(102, 126, 234, 1)',
-                            'rgba(118, 75, 162, 1)'
+                            'rgba(102, 126, 234, 1)'
                         ],
                         borderWidth: 2
                     }]
@@ -1010,12 +996,11 @@
             // Find weakest section
             const sectionArray = [
                 { name: 'Logical Reasoning', key: 'lr', accuracy: sections.lr.accuracy, time: sections.lr.time },
-                { name: 'Reading Comprehension', key: 'rc', accuracy: sections.rc.accuracy, time: sections.rc.time },
-                { name: 'Analytical Reasoning', key: 'ar', accuracy: sections.ar.accuracy, time: sections.ar.time }
+                { name: 'Reading Comprehension', key: 'rc', accuracy: sections.rc.accuracy, time: sections.rc.time }
             ].sort((a, b) => a.accuracy - b.accuracy);
 
             const weakest = sectionArray[0];
-            const middle = sectionArray[1];
+            const strongest = sectionArray[1];
 
             // Accuracy-based recommendations
             if (weakest.accuracy < 65) {
@@ -1044,8 +1029,8 @@
             }
 
             // Positive reinforcement
-            if (sectionArray[2].accuracy >= 80) {
-                recommendations.push(`<strong>Excellent Work:</strong> Your ${sectionArray[2].name} accuracy (${sectionArray[2].accuracy}%) is strong. Maintain with 1-2 drills per week.`);
+            if (strongest.accuracy >= 80) {
+                recommendations.push(`<strong>Excellent Work:</strong> Your ${strongest.name} accuracy (${strongest.accuracy}%) is strong. Maintain with 1-2 drills per week.`);
             }
 
             // Score projection
@@ -1091,10 +1076,6 @@
                 rc: {
                     accuracy: parseInt(document.getElementById('rcAccuracyUpdate').value),
                     time: studyPlan.history[studyPlan.history.length - 1].sections.rc.time
-                },
-                ar: {
-                    accuracy: parseInt(document.getElementById('arAccuracyUpdate').value),
-                    time: studyPlan.history[studyPlan.history.length - 1].sections.ar.time
                 }
             };
 
@@ -1126,8 +1107,7 @@
             // Find new weakest section
             const sectionArray = [
                 { name: 'LR', accuracy: sections.lr.accuracy },
-                { name: 'RC', accuracy: sections.rc.accuracy },
-                { name: 'AR', accuracy: sections.ar.accuracy }
+                { name: 'RC', accuracy: sections.rc.accuracy }
             ].sort((a, b) => a.accuracy - b.accuracy);
 
             const weakest = sectionArray[0];
@@ -1136,13 +1116,11 @@
             const lastWeek = studyPlan.history[studyPlan.history.length - 2];
             const lrDrop = lastWeek.sections.lr.accuracy - sections.lr.accuracy;
             const rcDrop = lastWeek.sections.rc.accuracy - sections.rc.accuracy;
-            const arDrop = lastWeek.sections.ar.accuracy - sections.ar.accuracy;
 
             let focusSection = weakest.name;
-            if (lrDrop > 5 || rcDrop > 5 || arDrop > 5) {
-                if (lrDrop >= rcDrop && lrDrop >= arDrop) focusSection = 'LR';
-                else if (rcDrop >= arDrop) focusSection = 'RC';
-                else focusSection = 'AR';
+            if (lrDrop > 5 || rcDrop > 5) {
+                if (lrDrop >= rcDrop) focusSection = 'LR';
+                else focusSection = 'RC';
             }
 
             // Adjust schedule based on difficulty feedback
@@ -1174,4 +1152,3 @@
     </script>
 </body>
 </html>
-https://claude.ai/api/organizations/9f16c5bf-a6bc-4f74-a8a3-af8c90724cff/conversations/a0d410b1-0470-41f8-8320-50f621359dfa/wiggle/download-file?path=%2Fmnt%2Fuser-data%2Foutputs%2FREADME.md
